@@ -25,13 +25,15 @@ const constraints = {
   }
 };
 
-const getCameraSelection = async () => {
-  const devices = await navigator.mediaDevices.enumerateDevices();
-  const videoDevices = devices.filter(device => device.kind === 'videoinput');
-  const options = videoDevices.map(videoDevice => {
-    return `<option value="${videoDevice.deviceId}">${videoDevice.label}</option>`;
-  });
-  cameraOptions.innerHTML = options.join('');
+cameraOptions.onchange = () => {
+  const updatedConstraints = {
+    ...constraints,
+    deviceId: {
+      exact: cameraOptions.value
+    }
+  };
+
+  startStream(updatedConstraints);
 };
 
 play.onclick = () => {
@@ -52,32 +54,6 @@ play.onclick = () => {
   }
 };
 
-const startStream = async (constraints) => {
-  const stream = await navigator.mediaDevices.getUserMedia(constraints);
-  handleStream(stream);
-};
-
-const handleStream = (stream) => {
-  video.srcObject = stream;
-  play.classList.add('d-none');
-  pause.classList.remove('d-none');
-  screenshot.classList.remove('d-none');
-  streamStarted = true;
-};
-
-getCameraSelection();
-
-...
-cameraOptions.onchange = () => {
-  const updatedConstraints = {
-    ...constraints,
-    deviceId: {
-      exact: cameraOptions.value
-    }
-  };
-  startStream(updatedConstraints);
-};
-
 const pauseStream = () => {
   video.pause();
   play.classList.remove('d-none');
@@ -94,3 +70,29 @@ const doScreenshot = () => {
 
 pause.onclick = pauseStream;
 screenshot.onclick = doScreenshot;
+
+const startStream = async (constraints) => {
+  const stream = await navigator.mediaDevices.getUserMedia(constraints);
+  handleStream(stream);
+};
+
+
+const handleStream = (stream) => {
+  video.srcObject = stream;
+  play.classList.add('d-none');
+  pause.classList.remove('d-none');
+  screenshot.classList.remove('d-none');
+
+};
+
+
+const getCameraSelection = async () => {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const videoDevices = devices.filter(device => device.kind === 'videoinput');
+  const options = videoDevices.map(videoDevice => {
+    return `<option value="${videoDevice.deviceId}">${videoDevice.label}</option>`;
+  });
+  cameraOptions.innerHTML = options.join('');
+};
+
+getCameraSelection();
